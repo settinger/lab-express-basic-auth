@@ -21,17 +21,22 @@ const checkAuthorization = (req, res, next) => {
 /* GET REQUESTS */
 // Sign-up page
 router.get('/signup', (req, res, next) => {
-  res.render('auth/signup');
+  res.render('auth/signup', {title: "New user registration"});
 });
 
 // Sign-in page
 router.get('/signin', (req, res, next) => {
-  res.render('auth/signin');
+  res.render('auth/signin', {title: "Existing user sign-in"});
 });
 
 // Private page for logged-in users
 router.get('/private', checkAuthorization, (req, res, next) => {
-  res.render('auth/private');
+  res.render('auth/private', {title: "PRIVATE PAGE"});
+});
+
+// Another private page for logged-in users
+router.get('/main', checkAuthorization, (req, res, next) => {
+  res.render('auth/main', {title: "PRIVATE PAGE"});
 });
 
 
@@ -50,16 +55,14 @@ router.post('/signup', (req, res, next) => {
         passwordHash: hash
       });
     })
-    .catch((err) => {
-      console.log(`Error hashing password: ${err}`);
-    })
     .then(user => {
       // Send user ID as cookie so we can check for log-in status later
       req.session.user = { _id: user._id };
-      res.redirect('/auth/private')
+      res.redirect('/auth/private');
     })
     .catch((err) => {
-      console.log(`Failed to create user: ${err}`);
+      console.log(`Error creating user: ${err}`);
+      res.render('auth/signup', { errorMessage: err.message });
     });
 });
 
@@ -81,9 +84,6 @@ router.post('/signin', (req, res, next) => {
         return bcrypt.compare(password, user.passwordHash);
       }
     })
-    .catch((err) => {
-      console.log(`Error retrieving user from database: ${err}`);
-    })
     // Check the result of the bcrypt comparison
     .then((comparison) => {
       if (!comparison) {
@@ -91,12 +91,13 @@ router.post('/signin', (req, res, next) => {
       } else {
         // User is logged in! Set a cookie to keep them logged in, redirect them to the /private page.
         req.session.user = { _id: tempUser._id };
-        res.redirect('/auth/private');
+        res.redirect('auth/private');
       }
     })
     .catch((err) => {
       console.log(`Error checking user password: ${err}`);
-    })
+      res.render('auth/signin', { errorMessage: err.message })
+    });
 });
 
 

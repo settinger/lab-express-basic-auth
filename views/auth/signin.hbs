@@ -1,5 +1,11 @@
 <h1>Sign In</h1>
 
+<div class="alert alert-danger">
+  {{#if errorMessage}}
+    ERROR: {{errorMessage}}
+  {{/if}}
+</div>
+
 <form method="POST" action="/auth/signin">
   <div class="form-group">
     <label for="signin-email">E-mail: </label>
